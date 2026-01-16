@@ -1,0 +1,13 @@
+{
+    "version": 0,
+    "requires": {
+        "cockpit": "120"
+    },
+    "name": "battery",
+    "menu": {
+        "index": {
+            "label": "Battery",
+            "order": 15
+        }
+    }
+}

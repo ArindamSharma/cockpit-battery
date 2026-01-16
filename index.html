@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Battery Information</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="battery.css">
+  <script src="../base1/cockpit.js"></script>
+  <script src="battery.js"></script>
+</head>
+<body>
+  <div class="page-container">
+    <div class="page-header">
+      <h1>Battery Information</h1>
+      <p class="subtitle">Real-time battery status from UPower</p>
+    </div>
+    <div id="status" class="alert alert-info">
+      <div class="alert-icon">
+        <div class="spinner"></div>
+      </div>
+      <div class="alert-title">Loading battery information...</div>
+    </div>
+    <div id="battery-display"></div>
+  </div>
+</body>
+</html>
