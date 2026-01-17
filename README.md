@@ -16,7 +16,7 @@ The plugin integrates seamlessly with Cockpit's web interface, Whether you're ma
 
 ## Screenshots
 
-![Screenshot of Cockpit Battery Plugin](./Screenshot.png)
+![Screenshot of Cockpit Battery Plugin](./Screenshot_1.0.1.png)
 
 ## Installation
 
