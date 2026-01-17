@@ -11,15 +11,20 @@
 <body>
   <div class="page-container">
     <div class="page-header">
-      <h1>Battery Information</h1>
-      <p class="subtitle">Real-time battery status from UPower</p>
-    </div>
-    <div id="status" class="alert alert-info">
-      <div class="alert-icon">
-        <div class="spinner"></div>
+      <h1 class="page-title">Battery</h1>
+      <div class="header-actions">
+        <button id="refresh-btn" class="refresh-button" title="Refresh battery information">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M13.65 2.35A7 7 0 1 0 14 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M14 4V2h-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Refresh
+        </button>
       </div>
-      <div class="alert-title">Loading battery information...</div>
     </div>
+    
+    <div id="alert-area"></div>
+    
     <div id="battery-display"></div>
   </div>
 </body>

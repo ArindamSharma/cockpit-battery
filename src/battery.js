@@ -2,6 +2,8 @@
     "use strict";
 
     var cockpit = window.cockpit;
+    var lastUpdateTime = null;
+    var updateIntervalId = null;
 
     function parseBatteryData(data) {
         var result = {};
@@ -26,18 +28,38 @@
         return '';
     }
 
-    function getPercentageClass(percentage) {
-        if (percentage >= 50) return 'success';
-        if (percentage >= 20) return 'warning';
-        return 'danger';
-    }
-
     function getWidthClass(percentage) {
-        // Round to nearest 5%
         var rounded = Math.round(percentage / 5) * 5;
         if (rounded > 100) rounded = 100;
         if (rounded < 0) rounded = 0;
         return 'w-' + rounded;
+    }
+
+    function formatTime(date) {
+        var hours = date.getHours();
+        var minutes = date.getMinutes();
+        var seconds = date.getSeconds();
+        var ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12;
+        hours = hours ? hours : 12;
+        minutes = minutes < 10 ? '0' + minutes : minutes;
+        seconds = seconds < 10 ? '0' + seconds : seconds;
+        return hours + ':' + minutes + ':' + seconds + ' ' + ampm;
+    }
+
+    function updateTimeAgo() {
+        if (!lastUpdateTime) return;
+        
+        var now = new Date();
+        var diffSeconds = Math.floor((now - lastUpdateTime) / 1000);
+        var alertDiv = document.getElementById('alert-area');
+        var timeStr = formatTime(lastUpdateTime);
+        
+        var agoText = diffSeconds === 1 ? '1 second ago' : diffSeconds + ' seconds ago';
+        
+        alertDiv.innerHTML = '<div class="alert alert-success">' +
+                             '<span>Last updated: ' + timeStr + ' (' + agoText + ')</span>' +
+                             '</div>';
     }
 
     function displayBatteryInfo(data) {
@@ -45,108 +67,204 @@
         var percentage = parseFloat(parsed.percentage) || 0;
         var capacity = parseFloat(parsed.capacity) || 0;
         var state = parsed.state || 'unknown';
+        var acOnline = parsed['ac-online'] || 'no';
         
-        var percentageClass = getPercentageClass(percentage);
         var statusClass = getStatusClass(state);
         var widthClass = getWidthClass(percentage);
         
-        var html = '<div class="cards-container">';
+        var html = '<div class="cards-grid">';
         
-        // Battery Percentage Card
+        // Power Status Card
         html += '<div class="card">';
-        html += '<div class="card-title">Battery Level</div>';
-        html += '<div class="card-value ' + percentageClass + '">' + percentage.toFixed(0) + '%</div>';
-        html += '<div class="progress-bar">';
-        html += '<div class="progress-fill ' + percentageClass + ' ' + widthClass + '"></div>';
+        html += '<div class="card-header">';
+        html += '<h2 class="card-title">Power Status</h2>';
         html += '</div>';
+        html += '<div class="card-body">';
+        html += '<div class="stat-row">';
+        html += '<span class="stat-label">Power source</span>';
+        if (acOnline === 'yes') {
+            html += '<span class="stat-value"><span class="power-source-indicator ac-connected">AC Connected</span></span>';
+        } else {
+            html += '<span class="stat-value"><span class="power-source-indicator battery-only">Battery</span></span>';
+        }
         html += '</div>';
-        
-        // Status Card
-        html += '<div class="card">';
-        html += '<div class="card-title">Status</div>';
-        html += '<div class="card-label"><span class="status-badge ' + statusClass + '">' + state + '</span></div>';
+        html += '<div class="stat-row">';
+        html += '<span class="stat-label">Status</span>';
+        html += '<span class="stat-value"><span class="status-badge ' + statusClass + '">' + state + '</span></span>';
+        html += '</div>';
         if (parsed['energy-rate'] && parseFloat(parsed['energy-rate']) > 0) {
-            html += '<div class="card-info">Rate: ' + parsed['energy-rate'] + '</div>';
+            html += '<div class="stat-row">';
+            html += '<span class="stat-label">Energy rate</span>';
+            html += '<span class="stat-value">' + parsed['energy-rate'] + '</span>';
+            html += '</div>';
         }
         html += '</div>';
+        html += '</div>';
         
-        // Health Card
+        // Battery Level Card
         html += '<div class="card">';
-        html += '<div class="card-title">Battery Health</div>';
-        html += '<div class="card-value ' + (capacity >= 70 ? 'success' : capacity >= 50 ? 'warning' : 'danger') + '">' + capacity.toFixed(1) + '%</div>';
-        html += '<div class="card-label">Capacity</div>';
+        html += '<div class="card-header">';
+        html += '<h2 class="card-title">Battery Level</h2>';
+        html += '</div>';
+        html += '<div class="card-body">';
+        html += '<div class="stat-row">';
+        html += '<span class="stat-label">Charge</span>';
+        html += '<span class="stat-value large">' + percentage.toFixed(0) + '%</span>';
+        html += '</div>';
+        html += '<div class="progress-container">';
+        html += '<div class="progress-bar">';
+        html += '<div class="progress-fill ' + widthClass + '"></div>';
+        html += '</div>';
+        html += '</div>';
+        html += '</div>';
+        html += '</div>';
+        
+        // Battery Health Card
+        html += '<div class="card">';
+        html += '<div class="card-header">';
+        html += '<h2 class="card-title">Battery Health</h2>';
+        html += '</div>';
+        html += '<div class="card-body">';
+        html += '<div class="stat-row">';
+        html += '<span class="stat-label">Capacity</span>';
+        html += '<span class="stat-value large">' + capacity.toFixed(1) + '%</span>';
+        html += '</div>';
         if (parsed['charge-cycles']) {
-            html += '<div class="card-info">' + parsed['charge-cycles'] + ' cycles</div>';
+            html += '<div class="stat-row">';
+            html += '<span class="stat-label">Charge cycles</span>';
+            html += '<span class="stat-value">' + parsed['charge-cycles'] + '</span>';
+            html += '</div>';
         }
+        html += '</div>';
         html += '</div>';
         
         // Energy Card
         if (parsed.energy && parsed['energy-full']) {
             html += '<div class="card">';
-            html += '<div class="card-title">Energy</div>';
-            html += '<div class="card-value">' + parsed.energy + '</div>';
-            html += '<div class="card-label">of ' + parsed['energy-full'] + '</div>';
+            html += '<div class="card-header">';
+            html += '<h2 class="card-title">Energy</h2>';
+            html += '</div>';
+            html += '<div class="card-body">';
+            html += '<div class="stat-row">';
+            html += '<span class="stat-label">Current</span>';
+            html += '<span class="stat-value">' + parsed.energy + '</span>';
+            html += '</div>';
+            html += '<div class="stat-row">';
+            html += '<span class="stat-label">Full charge</span>';
+            html += '<span class="stat-value">' + parsed['energy-full'] + '</span>';
+            html += '</div>';
+            if (parsed['energy-full-design']) {
+                html += '<div class="stat-row">';
+                html += '<span class="stat-label">Design capacity</span>';
+                html += '<span class="stat-value">' + parsed['energy-full-design'] + '</span>';
+                html += '</div>';
+            }
+            html += '</div>';
             html += '</div>';
         }
         
         html += '</div>';
         
-        // Details Section
-        html += '<div class="details-card">';
-        html += '<div class="details-title">Battery Details</div>';
-        html += '<div class="details-grid">';
+        // Battery Information Card (Full Width)
+        html += '<div class="card">';
+        html += '<div class="card-header">';
+        html += '<h2 class="card-title">Battery Information</h2>';
+        html += '</div>';
+        html += '<div class="card-body">';
+        html += '<div class="info-grid">';
         
         var details = [
             { label: 'Vendor', key: 'vendor' },
             { label: 'Model', key: 'model' },
             { label: 'Serial', key: 'serial' },
             { label: 'Technology', key: 'technology' },
-            { label: 'Voltage', key: 'voltage' },
-            { label: 'Design Capacity', key: 'energy-full-design' },
-            { label: 'Full Charge', key: 'energy-full' },
-            { label: 'Charge Cycles', key: 'charge-cycles' },
-            { label: 'Updated', key: 'updated' }
+            { label: 'Voltage', key: 'voltage' }
         ];
         
         details.forEach(function(detail) {
             if (parsed[detail.key]) {
-                html += '<div class="detail-item">';
-                html += '<div class="detail-label">' + detail.label + '</div>';
-                html += '<div class="detail-value">' + parsed[detail.key] + '</div>';
+                html += '<div class="info-item">';
+                html += '<span class="info-label">' + detail.label + '</span>';
+                html += '<span class="info-value">' + parsed[detail.key] + '</span>';
                 html += '</div>';
             }
         });
         
         html += '</div>';
         html += '</div>';
+        html += '</div>';
         
-        document.getElementById('battery-display').innerHTML = html;
+        var displayElement = document.getElementById('battery-display');
+        displayElement.style.opacity = '0.6';
+        displayElement.innerHTML = html;
+        setTimeout(function() {
+            displayElement.style.opacity = '1';
+        }, 100);
     }
 
-    function updateBatteryInfo() {
-        var statusDiv = document.getElementById('status');
-        statusDiv.className = 'alert alert-info';
-        statusDiv.innerHTML = '<div class="alert-icon"><div class="spinner"></div></div>' +
-                              '<div class="alert-title">Updating battery information...</div>';
+    function showAlert(message, type) {
+        var alertDiv = document.getElementById('alert-area');
+        type = type || 'info';
         
-        // Call the battery-info.sh script
+        alertDiv.innerHTML = '<div class="alert alert-' + type + '">' +
+                              '<span>' + message + '</span>' +
+                              '</div>';
+        
+        setTimeout(function() {
+            alertDiv.innerHTML = '';
+        }, 3000);
+    }
+
+    function showLastUpdate() {
+        lastUpdateTime = new Date();
+        updateTimeAgo();
+        
+        if (updateIntervalId) {
+            clearInterval(updateIntervalId);
+        }
+        
+        updateIntervalId = setInterval(updateTimeAgo, 1000);
+    }
+
+    function updateBatteryInfo(showLoading) {
+        var refreshBtn = document.getElementById('refresh-btn');
+        var alertDiv = document.getElementById('alert-area');
+        
+        if (showLoading !== false) {
+            refreshBtn.disabled = true;
+            refreshBtn.classList.add('loading');
+            
+            alertDiv.innerHTML = '<div class="alert alert-info">' +
+                                 '<span class="spinner"></span>' +
+                                 '<span>Loading battery information...</span>' +
+                                 '</div>';
+        }
+        
         cockpit.spawn(["/usr/share/cockpit/battery/battery-info.sh"])
             .done(function(data) {
-                statusDiv.className = 'alert alert-success';
-                statusDiv.innerHTML = '<div class="alert-icon">✓</div>' +
-                                    '<div class="alert-title">Last updated: ' + 
-                                    new Date().toLocaleTimeString() + '</div>';
                 displayBatteryInfo(data);
+                showLastUpdate();
+                refreshBtn.disabled = false;
+                refreshBtn.classList.remove('loading');
             })
             .fail(function(error) {
-                statusDiv.className = 'alert alert-danger';
-                statusDiv.innerHTML = '<div class="alert-icon">✗</div>' +
-                                    '<div class="alert-title">Error: ' + error + '</div>';
+                alertDiv.innerHTML = '<div class="alert alert-danger">' +
+                                     '<span>Failed to load battery information: ' + error + '</span>' +
+                                     '</div>';
+                refreshBtn.disabled = false;
+                refreshBtn.classList.remove('loading');
             });
     }
 
     document.addEventListener('DOMContentLoaded', function() {
-        updateBatteryInfo();
-        setInterval(updateBatteryInfo, 30000);
+        updateBatteryInfo(true);
+        
+        document.getElementById('refresh-btn').addEventListener('click', function() {
+            updateBatteryInfo(true);
+        });
+        
+        setInterval(function() {
+            updateBatteryInfo(false);
+        }, 30000);
     });
 })();
