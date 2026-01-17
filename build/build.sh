@@ -35,6 +35,8 @@ for s in preinst postinst prerm postrm; do
   fi
 done
 
+mkdir -p "$OUTPUTDIR"
+
 # Build the package
 dpkg-deb --build "$BUILDDIR/cockpit-battery_$VERSION" "$OUTPUTDIR/cockpit-battery_$VERSION.deb"
 
