@@ -3,6 +3,7 @@ Version: 1.0.0
 Section: utils
 Priority: optional
 Architecture: all
+Depends: cockpit, upower
 Maintainer: Annonymos Developer
 Description: Cockpit Battery - A simple battery info web app for Cockpit
  Cockpit Battery is a lightweight web application that provides real-time
