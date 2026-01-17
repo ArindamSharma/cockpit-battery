@@ -1,0 +1,18 @@
+#!/bin/sh
+set -e
+
+# postrm: runs after package is removed/configuration changes
+# Arguments: $1 = action (remove|purge|upgrade|failed-upgrade)
+TARGET_DIR="/usr/share/cockpit/cockpit-battery"
+case "$1" in
+  remove|purge)
+    # Attempt to restart cockpit in case it caches plugin list
+    if command -v systemctl >/dev/null 2>&1; then
+      systemctl try-restart cockpit.socket || true
+    fi
+    ;;
+  *)
+    ;;
+esac
+
+exit 0

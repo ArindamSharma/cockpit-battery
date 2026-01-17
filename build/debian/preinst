@@ -1,0 +1,14 @@
+#!/bin/sh
+set -e
+
+# preinst: runs before package is unpacked
+# Arguments: $1 = action (install|upgrade|abort-upgrade)
+case "$1" in
+  install|upgrade|abort-upgrade)
+    # No special pre-install actions required currently
+    ;;
+  *)
+    ;;
+esac
+
+exit 0

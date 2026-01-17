@@ -1,6 +1,6 @@
-# Cockpit Battery Information Plugin
+# Cockpit Battery Information Plugin for Cockpit
 
-An open source Cockpit plugin that provides comprehensive real-time battery monitoring for Linux systems. Perfect for tracking laptop battery health, UPS systems, or any battery-powered device in server environments. This plugin gives you detailed insights into battery performance, health status, and specifications.
+An open source [Cockpit](https://cockpit-project.org/)([github](https://github.com/cockpit-project/cockpit)) plugin that provides comprehensive real-time battery monitoring for Linux systems. Perfect for tracking laptop battery health, UPS systems, or any battery-powered device in server environments. This plugin gives you detailed insights into battery performance, health status, and specifications.
 
 The plugin integrates seamlessly with Cockpit's web interface, Whether you're managing a single laptop or monitoring multiple battery-powered devices in a server room, this tool provides the visibility you need to keep your systems running smoothly.
 
@@ -25,14 +25,14 @@ The plugin integrates seamlessly with Cockpit's web interface, Whether you're ma
 - UPower daemon (usually pre-installed on most Linux distributions)
 - A battery device (laptop battery, UPS, etc.)
 
-### Install Steps
+### Install Steps 
 
 1. **Clone or download this repository**
 
 2. **Copy files to Cockpit plugins directory**
    ```bash
    sudo mkdir -p /usr/share/cockpit/battery
-   sudo cp -r * /usr/share/cockpit/battery/
+   sudo cp -r src/* /usr/share/cockpit/battery/
    ```
 
 3. **Set proper permissions**
@@ -132,3 +132,7 @@ Built by a developer with an old laptop that deserved better battery monitoring!
 ---
 
 *Note: This plugin requires administrative access to install and may collect system information. Use at your own discretion.*
+
+## Create your own Cockpit Plugin
+
+For detailed instructions on creating a Cockpit plugin [Cockpit StaterKit](https://github.com/cockpit-project/starter-kit) and [myway](./create_custom_plugin.md)

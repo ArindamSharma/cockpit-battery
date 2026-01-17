@@ -1,0 +1,14 @@
+#!/bin/sh
+set -e
+
+# prerm: runs before package is removed/upgraded
+# Arguments: $1 = action (remove|upgrade|abort-upgrade)
+case "$1" in
+  remove|upgrade)
+    # No special pre-removal steps required
+    ;;
+  *)
+    ;;
+esac
+
+exit 0

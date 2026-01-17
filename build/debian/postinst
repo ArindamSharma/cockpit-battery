@@ -1,0 +1,23 @@
+#!/bin/sh
+set -e
+
+# postinst: runs after package unpack/configure
+# Arguments: $1 = action (configure|abort-upgrade|abort-remove)
+TARGET_DIR="/usr/share/cockpit/cockpit-battery"
+
+# Set safe defaults if directory exists
+if [ -d "$TARGET_DIR" ]; then
+  chmod 755 "$TARGET_DIR" || true
+  # make most files world-readable
+  find "$TARGET_DIR" -type f -exec chmod 644 {} \; || true
+  # ensure script is executable
+  [ -f "$TARGET_DIR/battery-info.sh" ] && chmod 755 "$TARGET_DIR/battery-info.sh" || true
+  chown -R root:root "$TARGET_DIR" || true
+fi
+
+# Try to restart cockpit to pick up new plugin
+if command -v systemctl >/dev/null 2>&1; then
+  systemctl try-restart cockpit.socket || true
+fi
+
+exit 0

@@ -1,0 +1,11 @@
+Package: cockpit-battery
+Version: 1.0.0
+Section: utils
+Priority: optional
+Architecture: all
+Maintainer: Annonymos Developer
+Description: Cockpit Battery - A simple battery info web app for Cockpit
+ Cockpit Battery is a lightweight web application that provides real-time
+ information about your system's battery status. It integrates seamlessly
+ with the Cockpit web console, allowing users to monitor battery health,
+ charge levels, and estimated time remaining directly from their browser.
