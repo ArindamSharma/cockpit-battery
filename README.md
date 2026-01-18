@@ -25,7 +25,7 @@ The plugin integrates seamlessly with Cockpit's web interface, Whether you're ma
 - UPower daemon (usually pre-installed on most Linux distributions)
 - A battery device (laptop battery, UPS, etc.)
 
-### Install Steps 
+### Install Steps via Codebase
 
 1. **Clone or download this repository**
 
@@ -53,37 +53,18 @@ The plugin integrates seamlessly with Cockpit's web interface, Whether you're ma
    - Login with your system credentials
    - Look for "Battery" in the left sidebar menu
 
-## What It Shows
+### Install Step via .deb package
 
-### Battery Level Card
-- Current battery percentage (0-100%)
-- Visual progress bar with color coding:
-  - 🟢 Green: 50% and above
-  - 🟡 Yellow: 20-49%
-  - 🔴 Red: Below 20%
+*Note: make sure cockpit is installed*
 
-### Status Card
-- Current charging/discharging state
-- Energy consumption rate (when available)
-- Status indicators: Charging, Fully Charged, Discharging
+```bash
+# Using dpkg (navigate to the folder containing your .deb file)
+sudo dpkg -i package_name.deb
 
-### Battery Health Card
-- Battery capacity percentage (health indicator)
-- Number of charge cycles
-- Color-coded health status
+# Using apt (this method automatically handles dependencies better than dpkg)
+sudo apt install ./package_name.deb
 
-### Energy Information Card
-- Current energy level
-- Full charge capacity
-- Energy units (Wh)
-
-### Detailed Specifications
-- Manufacturer and model information
-- Serial number
-- Battery technology (Li-ion, Li-po, etc.)
-- Voltage information
-- Design capacity vs. current capacity
-- Last update timestamp
+```
 
 ## Configuration
 
